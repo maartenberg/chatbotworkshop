@@ -1,24 +1,37 @@
 import telepot
+from telepot.delegate import per_chat_id, create_open, pave_event_space
 import time
 import commands
 
-commands = {"/start": commands.start}
+commanddict = {
+    "/start": commands.start,
+    "/help": commands.help,
+    "/setup": commands.setup,
+}
+
+class BattleshipBot(telepot.helper.ChatHandler):
+    def __init__(self, *args, **kwargs):
+        super(BattleshipBot, self).__init__(*args, **kwargs)
+
+        # Initialiseer hier je state
+        self.game_state = commands.GamePhase.NONE
+
+    def on_chat_message(self, msg):
+        cmd = self.get_command(msg)
+        res = cmd(self, msg)
+
+        if res:
+            self.sender.sendMessage(res, parse_mode='Markdown')
 
 
-def on_msg(msg):
-    command = msg["text"]
-
-    if command in commands.keys():
-        commands[command](msg, bot)
-
-
+    def get_command(self, msg):
+        firstword = msg['text'].split()[0]
+        return commanddict.get(firstword, commands.catchall)
 
 if __name__ == '__main__':
-    bot = telepot.Bot("238085180:AAEkpdj6JceHn2fjn8f4jCxbFiUCyvTMaLE")
-
-    print('Online...')
-    bot.message_loop({'chat': on_msg,
-                      })
-
-    while 1:
-        time.sleep(10)
+    TOKEN = "326577114:AAGTzxrk9awgd_xpxL07xQji_wkRSJgnV24"
+    bot = telepot.DelegatorBot( TOKEN, [
+        pave_event_space()(
+        per_chat_id(), create_open, BattleshipBot, timeout=1000006),
+        ])
+    bot.message_loop(run_forever=True)
