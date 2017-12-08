@@ -2,6 +2,7 @@ import enum
 import pybattleships
 from pybattleships.ship import Ship
 from pybattleships.board import Board
+from pybattleships.game import Game
 import pybattleships.game
 
 class GamePhase(enum.IntEnum):
@@ -38,6 +39,9 @@ def catchall(bot, msg):
                     b = pybattleships.board.Board(bot.ships)
                     b2 = generate_opponent_board()
                     bot.sender.sendMessage( 'ha ik heb je bord geaccepteerd supermooi pik')
+                    bot.game = Game("player", "bot")
+                    bot.game.register_board("player", b)
+                    bot.game.register_board("bot", b2)
                     return "`{}`".format(b.prettyprint(blind=False))
                 except ValueError:
                     bot.ships = []
@@ -45,8 +49,17 @@ def catchall(bot, msg):
 
         except ValueError:
             return 'fuk u'
+    elif bot.game_state == GamePhase.GAME:
+        px, py = Ship.parse_shot_notation(msg['text'])
+        res = bot.game.process_fire(px, py)
+        bot.sender.sendMessage('Dat was een %s' res)
+        bx, by = generate_opponent_hit()
+        bres = bot.game.process_fire(bx, by)
     else:
         return 'hee dat is geen commando'
+
+def generate_opponent_hit() -> (int, int):
+    return (0, 0)
 
 def generate_opponent_board() -> pybattleships.board.Board:
     ''' Create hardcoded board for the computer to use. '''
