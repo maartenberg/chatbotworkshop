@@ -1,4 +1,5 @@
 import enum
+import bot_behaviour
 import pybattleships
 from pybattleships.ship import Ship
 from pybattleships.board import Board
@@ -18,7 +19,8 @@ def help(bot, msg):
     helptekst = '''/help - Read this wonderful text again.
 /setup - Begin placing your ships.
 /playgame - Finish placing ships and get shot at.
-/fire - Fire at the enemy.'''
+'''
+
     return helptekst
 
 def setup(bot, msg):
@@ -38,7 +40,7 @@ def playgame(bot, msg):
 def catchall(bot, msg):
     if bot.game_state == GamePhase.SETUP:
         try:
-            if msg['text'] == 'default':
+            if msg['text'].lower() == 'default':
                 bot.ships = debug_ships()
             else:
                 s = Ship.parse_notation(msg['text'])
@@ -47,27 +49,52 @@ def catchall(bot, msg):
             if len(bot.ships) == 10:
                 try:
                     b = pybattleships.board.Board(bot.ships)
-                    b2 = generate_opponent_board()
-                    bot.sender.sendMessage( 'ha ik heb je bord geaccepteerd supermooi pik')
+                    bot.sender.sendMessage( 'Board accepted, start game with /playgame')
+                    bot_behaviour.initialize(bot)
+                    b2 = bot_behaviour.generate_board(bot)
                     bot.game = Game("player", "bot")
                     bot.game.register_board("player", b)
                     bot.game.register_board("bot", b2)
                     return "`{}`".format(b.prettyprint(blind=False))
                 except ValueError:
                     bot.ships = []
-                    return 'get fukt en probeer het opnieuw al dan niet in die volgorde'
+                    return 'One or more of your ships are placed incorrectly, unable to generate a board.\n\
+                        ships reset'
 
         except ValueError:
-            return 'fuk u'
+            return 'Could not parse your notation, please try again.'
     elif bot.game_state == GamePhase.GAME:
-        bot.sender.sendMessage('Kabliem {}'.format(msg['text']))
-        px, py = Ship.parse_shot_notation(msg['text'])
-        res = bot.game.process_fire(px, py)
-        bot.sender.sendMessage('Dat was een {}'.format(res))
-        bx, by = generate_opponent_hit()
-        bres = bot.game.process_fire(bx, by)
+        try:
+            px, py = Ship.parse_shot_notation(msg['text'])
+            res = bot.game.process_fire(px, py)
+            bot.sender.sendMessage('Your shot was a {}'.format(res.name))
+
+            if res == 3:
+                bot.game_state = GamePhase.ENDED
+                bot.sender.sendMessage("{} Wins!".format(bot.game.current_opponent())
+                return
+
+            bot.sender.sendMessage("`{}`".format(bot.game.print_board('bot', True)), parse_mode='Markdown')
+
+            #process bot logic
+            bx, by = bot_behaviour.generate_hit(bot)
+            bres = bot.game.process_fire(bx, by)
+            bot.results.append((bx, by, bres))
+            bot.sender.sendMessage('Bot shot at {}, it was a {}'.format(to_ledgible(bx, by), bres.name))
+
+            if res == 3:
+                bot.game_state = GamePhase.ENDED
+                bot.sender.sendMessage("{} Wins!".format(bot.game.current_opponent())
+                return
+
+            return "`{}`".format(bot.game.print_board('player', False))
+
+        except ValueError:
+            return ''
+    elif bot.game_state == GamePhase.ENDED:
+        return 'Game has already ended. Use /setup to restart at the setup phase.'
     else:
-        return 'hee dat is geen commando'
+        return 'I do not understand what you want me to do'
 
 def debug_ships() -> [pybattleships.ship.Ship]:
     ''' Create hardcoded board for the computer to use. '''
@@ -105,3 +132,8 @@ def generate_opponent_board() -> pybattleships.board.Board:
 
     board = Board(ships)
     return board
+
+def to_ledgible(x: int, y:int) -> str:
+    a = chr(ord('A') + x)
+    b = y+1
+    return "{}{}".format(a, b)
