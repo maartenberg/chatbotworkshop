@@ -24,10 +24,6 @@ class BattleshipBot(telepot.helper.ChatHandler):
         cmd = self.get_command(msg)
         res = cmd(self, msg)
 
-        if res:
-            self.sender.sendMessage(res, parse_mode='Markdown')
-
-
     def get_command(self, msg):
         firstword = msg['text'].split()[0]
         return commanddict.get(firstword, commands.catchall)
