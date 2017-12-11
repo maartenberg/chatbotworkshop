@@ -20,7 +20,7 @@ def initialize(bot):
 def generate_hit(bot) -> (int, int):
     '''
     This function will be called any time your bot has to decide what to do.
-    Remeber that a tuple of (x, y) values are excpected and both x and y have to be an integer from 0-9
+    Remeber that a tuple of (x, y) values are expected and both x and y have to be an integer from 0-9
     '''
     x = random.randrange(10)
     y = random.randrange(10)
@@ -34,7 +34,11 @@ def generate_hit(bot) -> (int, int):
         return (x, y)
 
 def generate_board(bot) -> pybattleships.board.Board:
-    ''' Create hardcoded board for the computer to use. '''
+    '''
+    This function will be called when it's the bot's turn to set up a board.
+    You can keep it as is but that would be pretty boring to play against, so it;s best to come up with a way to
+    generate a board automatically.
+    '''
     s1  = Ship.parse_notation('(A1, H, 2)')
     s2  = Ship(3, 0, False, 3) #Another (easier) way to make a ship
                                # this is the same ship as Ship.parse_notation('(D1, V, 3)') would have made.
