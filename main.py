@@ -1,6 +1,9 @@
+import time
+import os
+
 import telepot
 from telepot.delegate import per_chat_id, create_open, pave_event_space
-import time
+
 import commands
 
 commanddict = {
@@ -30,7 +33,7 @@ class BattleshipBot(telepot.helper.ChatHandler):
         return commanddict.get(firstword, commands.catchall)
 
 if __name__ == '__main__':
-    TOKEN = "326577114:AAGTzxrk9awgd_xpxL07xQji_wkRSJgnV24"
+    TOKEN = os.environ.get('BOT_TOKEN', default=input('Token: '))
     bot = telepot.DelegatorBot( TOKEN, [
         pave_event_space()(
         per_chat_id(), create_open, BattleshipBot, timeout=1000006),
