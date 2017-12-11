@@ -7,6 +7,7 @@ commanddict = {
     "/start": commands.start,
     "/help": commands.help,
     "/setup": commands.setup,
+    "/playgame": commands.playgame,
 }
 
 class BattleshipBot(telepot.helper.ChatHandler):
