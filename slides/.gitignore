@@ -1,0 +1,10 @@
+*.svg
+*.toc
+*.log
+*.out
+*.pdf
+*.fls
+*.aux
+*.fdb_latexmk
+*.nav
+*.snm
