@@ -26,6 +26,8 @@ class BattleshipBot(telepot.helper.ChatHandler):
 
     def get_command(self, msg):
         firstword = msg['text'].split()[0]
+        if '@' in firstword:
+            firstword = firstword.split('@')[0]
         return commanddict.get(firstword, commands.catchall)
 
 if __name__ == '__main__':

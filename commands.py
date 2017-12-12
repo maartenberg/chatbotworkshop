@@ -27,7 +27,8 @@ def setup(bot, msg):
     bot.game_state = GamePhase.SETUP
     bot.ships = []
     bot.sender.sendMessage(
-        'Now give me 10 messages formatted like `(A1, H, 3)`.'
+        'Now give me 10 messages formatted like `(A1, H, 3)`.',
+        parse_mode='Markdown'
     )
 
 def playgame(bot, msg):
@@ -59,7 +60,8 @@ def catchall(bot, msg):
                     bot.game.register_board("player", b)
                     bot.game.register_board("bot", b2)
                     bot.sender.sendMessage(
-                        "`{}`".format(b.prettyprint(blind=False))
+                        "`{}`".format(b.prettyprint(blind=False)),
+                        parse_mode='Markdown'
                     )
 
                 except ValueError:
@@ -112,7 +114,8 @@ def catchall(bot, msg):
                 return
 
             bot.sender.sendMessage(
-                "`{}`".format(bot.game.print_board('player', False))
+                "`{}`".format(bot.game.print_board('player', False)),
+                parse_mode='Markdown'
             )
 
         except ValueError:
